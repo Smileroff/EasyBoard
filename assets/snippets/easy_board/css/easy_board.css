@@ -1,0 +1,64 @@
+.eb-paginate ul{
+	margin:0;
+	padding:0;
+}
+
+.eb-paginate ul li{
+	display:block;
+	padding: 5px;
+	border:1px solid #cccccc;
+	margin:5px 1px;
+	#height: 35px;
+	float:left;
+}
+li.eb-currentPage{
+	background-color: #dddddd;
+}
+.eb-clear{
+	clear:both;
+}
+.eb-image{
+	float:left;
+	margin: 0 10px 10px 0;
+}
+.eb-desc{
+	margin:0 0 20px 160px;
+}
+.eb-head{
+	font-weight:bold;
+	font-size:120%;
+}
+ul.eb-foot{
+	margin:5px 0 5px 0;
+	padding:0;
+	font-size:90%;
+	color:#555555;
+}
+ul.eb-foot li{
+	float:left;
+	list-style:none;
+	margin: 0 10px 0 0;
+}
+#eb-price{
+	font-size: 110%;
+	color: #A00000;
+	font-weight:bold;
+}
+ul.eb-list-single{
+	margin:0 0 10px 0;
+	padding:0;
+	font-size:90%;
+	color:#555555;
+}
+ul.eb-list-single li{
+	float:left;
+	list-style:none;
+	margin: 0 10px 0 0;
+}
+.eb-contact{
+	font-size:150%;
+	margin: 10px 0 0 0;
+}
+table.eb-table td{
+	padding-right:10px;
+}
