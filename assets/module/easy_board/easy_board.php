@@ -1,5 +1,7 @@
 <?php
-
+#######################
+# Easy Board v 1.01
+#######################
 	include_once($modx->config['base_path'].'assets/modules/easy_board/easy_board.config.php');
 	
 	include_once($modx->config['base_path'].'assets/modules/easy_board/easy_board.inc.php');
@@ -131,11 +133,11 @@
 					'parent' => (int)$_POST[parent],
 					'city' => (int)$_POST[city],
 					'hit' => (int)$_POST[hit],
-					'image' => loadImage($imageDir),	
 					'createdby' => (int)$_POST[createdby]
                     );
 	$fields['published'] = (isset($_POST[published])) ? 1: 0;
 	$fields['allcity'] = (isset($_POST[allcity])) ? 1: 0;
+	if ( isset($_FILES['image']) ) $fields['image'] = loadImage($imageDir);
     $query = $modx->db->update($fields, $mod_table, "id = ".(int)$_POST['item_id']."");
     header("Location: $_SERVER[REQUEST_URI]");
     break;

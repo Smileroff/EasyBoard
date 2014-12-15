@@ -1,4 +1,8 @@
 ﻿<?php
+#####################
+# Easy_Board ver 1.01
+#####################
+
 if(!defined('MODX_BASE_PATH')){die('What are you doing? Get out of here!');}
 $output = "";
 $modx->regClientCSS( $css );
@@ -77,9 +81,9 @@ case "viewboard":
 			"url" =>$modx->makeUrl( $idviewurl, "", "&eb=".$data['id'] )
 			);
 		$pl["annotation"] = ( strlen($data['content']) > $annotationlen ) ? mb_substr($data['content'], 0, $annotationlen, "UTF8")."..." : $data['content'];
-		if ( $data['image'] != "" ){
-			$pl["image"] = "<img src=\"".$modx->config['site_url'].$modx->runSnippet('phpthumb', array( 'input' => $data['image'], 'options' => $phpthumboption ))."\"/>";
-			} else $pl["image"] = "";
+		
+		$data['image'] = ( $data['image'] != "" ) ? $data['image'] : $nophoto;
+		$pl["image"] = "<img src=\"".$modx->config['site_url'].$modx->runSnippet('phpthumb', array( 'input' => $data['image'], 'options' => $phpthumboption ))."\"/>";
 			
 		if ( $LoginUserID == $data['createdby'] OR $_SESSION['mgrRole'] == 1 ){
 			$pl['edit'] = "<a href=\"".$modx->makeUrl( $idediturl, "", "&eb=".$data['id'] )."\">$txtedit</a>";
@@ -125,6 +129,7 @@ case "viewsingle":
 			"url" =>$modx->makeUrl( $idviewurl, "", "&eb=".$data['id'] )
 			);
 		$pl["annotation"] = ( strlen($data['content']) > $annotationlen ) ? mb_substr($data['content'], 0, $annotationlen, "UTF8")."..." : $data['content'];
+
 		if ( $data['image'] != "" ){
 			$pl["image"] = "<img src=\"".$modx->config['site_url'].$modx->runSnippet('phpthumb', array( 'input' => $data['image'], 'options' => $phpthumboptionSingle ))."\"/>";
 			} else $pl["image"] = "";
@@ -135,7 +140,7 @@ case "viewsingle":
 		$fields['hit'] = $data['hit'] + 1;
 		$query = $modx->db->update( $fields, $mod_table, "id = ".$data['id'] );
 		
-		} else $modx->setPlaceholder('eb.pagetitle', "Объявление не найдено");;
+		} else $modx->setPlaceholder('eb.pagetitle', $_lang['eb_notfound']);;
 	
     break;
 	
@@ -174,7 +179,7 @@ case "edit":
 						}
 					$query = $modx->db->update($fields, $mod_table, "id = $id");
 					header("Location: http://".$_SERVER['SERVER_NAME'].$modx->makeUrl($idafterediturl));
-					} else die("Доступ запрещен");
+					} else die($_lang['eb_accessdenied']);
 				
 				die("");
 				}
@@ -208,7 +213,7 @@ case "edit":
 				}
 			</script>');
 			
-			$tmp = "<div id=\"picdel$id\"><p>Фотография:</p>";
+			$tmp = "<div id=\"picdel$id\">".$_lang['eb_photo'];
 			$image = $data['image'];
 			if ( $image == "" ) {
 				$tmp .= "<input name=\"image\" type=\"file\" />";
@@ -219,24 +224,25 @@ case "edit":
 				$tmp .= "<td valign=\"top\">$img[0]px x $img[1]px<br/>".(ceil( filesize( $modx->config['base_path'].$image ) / 1024) )." Kb<br/>";
 				$tmp .= '<ul class="actionButtons">
 							<li id="Button1" style="margin-top:7px;">
-								<a href="#" title="Удалить" onclick="ItemAjax(\'delpic\', \''.$id.'\', \'picdel\');return false">Удалить фотографию</a>
+								<a href="#" title="Удалить" onclick="ItemAjax(\'delpic\', \''.$id.'\', \'picdel\');return false">'.$_lang['eb_photodel'].'</a>
 							</li>
 						</ul>';
 				$tmp .= "</td></tr></table>";
-				} else $tmp .= "Фотография $image не найдена!<br/> <input name=\"image\" type=\"file\" />";
+				} else $tmp .= $_lang['eb_photonotfound1'].$image.$_lang['eb_photonotfound2']."<br/> <input name=\"image\" type=\"file\" />";
 			$tmp .= "</div>";
 			$pl['image'] = $tmp;
 			
 			$output .= $modx->parseText($template, $pl, '[+', '+]') ;
-			} else die("Доступ запрещен");
+			} else die($_lang['eb_accessdenied']);
 	}
 		
     break;
 	
 case "add":
 	$LoginUserID = $modx->getLoginUserID();
-	if ( $LoginUserID !== NULL AND $_POST['act'] == "add"){
-		$fields = array(
+	if ( $LoginUserID !== NULL ){
+		if ( $_POST['act'] == "add" ){
+			$fields = array(
 						'pagetitle'  => $modx->db->escape( $_POST[pagetitle]),  
 						'content' => $modx->db->escape( $_POST[content]),  
 						'contact'  => $modx->db->escape( $_POST[contact]),  
@@ -248,20 +254,23 @@ case "add":
 						'createdby' => $LoginUserID,
 						'createdon' => time()
 						);
-		$modx->db->insert( $fields, $mod_table);
-		header("Location: http://".$_SERVER['SERVER_NAME'].$modx->makeUrl($idafterediturl));
-		die("");
-		}
+			$modx->db->insert( $fields, $mod_table);
+			header("Location: http://".$_SERVER['SERVER_NAME'].$modx->makeUrl($idafterediturl));
+			die("");
+			
+			} else {
 	
-	if ($tpladd == "") {
+			if ($tpladd == "") {
 				$template = file_get_contents($snippetPath . "tpl/add.tpl");
 				} else $template = $modx->getChunk($tpladd);
-	$pl = array(
-		"parentIds" =>genOptionList($parentIds, ""),
-		"cityIds" =>genOptionList($cityIds, ""),
-		"image" => "<p>Фотография:</p><input name=\"image\" type=\"file\" /><br/>Размер файла не должен превышать ".ceil($imagesize/1024)." Kb."
-		);
-	$output .= $modx->parseText($template, $pl, '[+', '+]') ;
+			$pl = array(
+				"parentIds" =>genOptionList($parentIds, ""),
+				"cityIds" =>genOptionList($cityIds, ""),
+				"image" => $_lang['eb_photoadd']."<input name=\"image\" type=\"file\" />".$_lang['eb_photoaddlimit'].ceil($imagesize/1024)." Kb."
+				);
+			$output .= $modx->parseText($template, $pl, '[+', '+]') ;
+			}
+		}
 	break;
 
 }

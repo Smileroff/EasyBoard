@@ -3,12 +3,17 @@ function genOptionList($parentID, $currentID, $sort = "pagetitle"){
 	global $modx;
 	
 	$childrens = array();
-	$childrens = $modx->getAllChildren($parentID, $sort);
+	$childrens = $modx->getAllChildren($parentID, $sort, "ASC", "id, pagetitle, isfolder");
 	$tmp = "";
 	foreach ($childrens as $value){
-		$tmp .= "<option value=".$value['id'];
-		if ( $value['id']==$currentID ) $tmp .= " selected";
-		$tmp .= ">".$value['pagetitle']."</option>\n";
+		if ( $value['isfolder'] == 1 ) $tmp .="<optgroup label=\"".$value['pagetitle']."\">";
+		if ( $value['isfolder'] == 0 ) {
+			$tmp .= "<option value=".$value['id'];
+			if ( $value['id']==$currentID ) $tmp .= " selected";
+			$tmp .= ">".$value['pagetitle']."</option>\n";
+			}
+		if ( $value['isfolder'] == 1 ) $tmp .= genOptionList($value['id'], $currentID);
+		if ( $value['isfolder'] == 1 ) $tmp .= "</optgroup>";
     }
 	return $tmp;
 	}

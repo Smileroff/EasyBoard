@@ -1,7 +1,7 @@
 <?php
 if(!defined('MODX_BASE_PATH')){die('What are you doing? Get out of here!');}
 #::::::::::::::::::::::::::::::::::::::::
-# ver 1.0 - доска объявлений Easy Board. 
+# ver 1.01 - доска объявлений Easy Board. 
 # автор - леха.com, декабрь 2014 
 #::::::::::::::::::::::::::::::::::::::::
 
@@ -25,13 +25,16 @@ $css = ( isset($css) ) ? $css : $modx->config['site_url']."assets/snippets/easy_
 $tplview = ( isset($tplview) ) ? $tplview : "";
 $tpledit = ( isset($tpledit) ) ? $tpledit : "";
 $tplviewsingle = ( isset($tplviewsingle) ) ? $tplviewsingle : "";
+$nophoto = ( isset($nophoto) ) ? $nophoto : "assets/snippets/easy_board/images/no_photo.gif"; // изображение для объявлений без фотографии
 $phpthumboption = ( isset($phpthumboption) ) ? $phpthumboption : "w=150,h=120,far=R,zc=1,bg=FFFFFF"; // опция для phpthumb
 $phpthumboptionSingle = ( isset($phpthumboptionSingle) ) ? $phpthumboptionSingle : "w=380,h=250,far=R,zc=1,bg=FFFFFF"; // опция для phpthumb при просмотре объявления
 $imagesize =  ( isset($imagesize) ) ? $imagesize : 1048576; //ограничение на размер загружаемого изображения
+$lang = ( isset($lang) ) ? $lang : "russian"; 			// Языковой пакет
 
 include_once($modx->config['base_path']."assets/modules/easy_board/easy_board.config.php");
 include_once($modx->config['base_path']."assets/modules/easy_board/easy_board.inc.php");
 $snippetPath = $modx->config['base_path'] . "assets/snippets/easy_board/";	
+include_once ( $snippetPath . "lang/$lang.inc.php");
 include_once ( $snippetPath . "easy_board.php");
 
 return $output;

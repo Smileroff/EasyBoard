@@ -35,7 +35,7 @@ if ( isset($_GET[act]) AND ($masterID == $LoginUserID OR isset( $_SESSION['mgrVa
 		$item_id = (int)$_GET[item_id];
 		$fields = array ( 'published' => 0 );
 		$query = $modx->db->update($fields, $mod_table, "id = $item_id");
-		die('Снято с публикации');
+		die('');
 	}
 }
 } else {
