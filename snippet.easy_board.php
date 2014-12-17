@@ -1,7 +1,7 @@
 <?php
 if(!defined('MODX_BASE_PATH')){die('What are you doing? Get out of here!');}
 #::::::::::::::::::::::::::::::::::::::::
-# ver 1.01 - доска объявлений Easy Board. 
+# ver 1.02 - доска объявлений Easy Board. 
 # автор - леха.com, декабрь 2014 
 #::::::::::::::::::::::::::::::::::::::::
 
@@ -9,6 +9,7 @@ if(!defined('MODX_BASE_PATH')){die('What are you doing? Get out of here!');}
 $action = ( isset($action) ) ? $action : "viewboard";
 $limit = ( isset($limit) ) ? $limit : 20; 				// лимит количества объявлений на странице
 $parent = ( isset($parent) ) ? $parent : ""; 			// id рубрики
+$recursion = ( isset($recursion) ) ? $recursion : 0;	// 1 - включая все подрубрики принадлежащие $parent, 0 - только указанные рубрики в $parent
 $parentIds = ( isset($parentIds) ) ? $parentIds : 0;	// id родителя рубрик
 $city = ( isset($city) ) ? $city : ""; 					// id города
 $cityIds = ( isset($cityIds) ) ? $cityIds : 0;			// id города
@@ -31,11 +32,12 @@ $phpthumboptionSingle = ( isset($phpthumboptionSingle) ) ? $phpthumboptionSingle
 $imagesize =  ( isset($imagesize) ) ? $imagesize : 1048576; //ограничение на размер загружаемого изображения
 $lang = ( isset($lang) ) ? $lang : "russian"; 			// Языковой пакет
 
-include_once($modx->config['base_path']."assets/modules/easy_board/easy_board.config.php");
+include($modx->config['base_path']."assets/modules/easy_board/easy_board.config.php");
 include_once($modx->config['base_path']."assets/modules/easy_board/easy_board.inc.php");
 $snippetPath = $modx->config['base_path'] . "assets/snippets/easy_board/";	
-include_once ( $snippetPath . "lang/$lang.inc.php");
-include_once ( $snippetPath . "easy_board.php");
+include ( $snippetPath . "lang/$lang.inc.php");
+include_once ( $snippetPath . "easy_board.inc.php");
+include ( $snippetPath . "easy_board.php");
 
 return $output;
 ?>

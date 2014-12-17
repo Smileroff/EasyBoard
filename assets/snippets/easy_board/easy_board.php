@@ -1,6 +1,6 @@
 ﻿<?php
 #####################
-# Easy_Board ver 1.01
+# Easy_Board ver 1.02
 #####################
 
 if(!defined('MODX_BASE_PATH')){die('What are you doing? Get out of here!');}
@@ -17,7 +17,14 @@ case "viewboard":
 	if ( $parent !="" || $city !="" || $user !="" || $published !="") {
 		//
 		$wheres = array();
-		if ($parent !="") $wheres[] = "$mod_table.parent = $parent";
+		if ($parent !="") {
+			$tmpParents = getParentsArray ($parent, $recursion);
+			$whereParents = array();
+			foreach ($tmpParents as $value){
+				$whereParents[] = "$mod_table.parent = $value";
+			}
+			$wheres[] = "(". implode(" OR ", $whereParents) .")";
+			}
 		if ( trim($city) != "") $wheres[] = "($mod_table.city = $city or $mod_table.allcity = 1)";
 		if ($user !="") $wheres[] = "$mod_table.createdby = $user";
 		if ($published !="") $wheres[] = "$mod_table.published = $published";
@@ -34,12 +41,14 @@ case "viewboard":
     $boardCol = $stickers['COUNT(*)'];
     $boardPages = ceil($boardCol/$limit);
 
-    $pagination = "<div class=\"eb-paginate\">Страница: $boardPage из $boardPages. Всего объявлений в базе $boardCol <br/><br/><ul>";
-    if ($boardPage > 1) $pagination .= '<li><a href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".($boardPage-1)).'"><< предыдущая</a></li>';
+    //$pagination = "<div class=\"eb-paginate\">Страница: $boardPage из $boardPages. Всего объявлений в базе $boardCol <br/><br/><ul>";
+	$pagination = "<div class=\"eb-paginate\">";
+	$pagination .= str_replace(array("[+boardPage+]", "[+boardPages+]", "[+boardCol+]"), array($boardPage, $boardPages, $boardCol), $_lang['eb_pagination']);
+    if ($boardPage > 1) $pagination .= '<li><a href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".($boardPage-1)).'">'.$_lang['eb_paginationprevious'].'</a></li>';
     for ($i = 1; $i <= $boardPages; $i++) 
         if ($i == $boardPage) $pagination .= '<li class="eb-currentPage"><a class="eb-currentPage" href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".$i).'">'.$i.'</a></li>'; 
         else if ( abs($i-$boardPage) < 5 || $i == 1 || $i == $boardPages) $pagination .= '<li><a href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".$i).'">'.$i.'</a></li>';
-    if ($boardPage < $boardPages) $pagination .= ' <li><a href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".($boardPage+1)).'">Следующая >></a></li>';
+    if ($boardPage < $boardPages) $pagination .= ' <li><a href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".($boardPage+1)).'">'.$_lang['eb_paginationnext'].'</a></li>';
     $pagination .= "</ul></div><div class=\"eb-clear\"></div>\n";
 	$modx->setPlaceholder('eb.pagination', $pagination);
     // ФИНИШ пагинации
@@ -199,7 +208,7 @@ case "edit":
 				"parentname" =>$data['parentname'],
 				"parent" =>$data['parent'],
 				"parentIds" =>genOptionList($parentIds, $data['parent']),
-				"cityIds" =>genOptionList($cityIds, $data['city']),
+				"cityIds" =>genOptionList($cityIds, $data['city'], false),
 				"allcity" => genCheckbox($data['allcity']),
 				"published" => genCheckbox($data['published']),
 				"date" =>date( "Y.m.d G:i:s", $data['createdon'] )
@@ -265,12 +274,38 @@ case "add":
 				} else $template = $modx->getChunk($tpladd);
 			$pl = array(
 				"parentIds" =>genOptionList($parentIds, ""),
-				"cityIds" =>genOptionList($cityIds, ""),
+				"cityIds" =>genOptionList($cityIds, "", false),
 				"image" => $_lang['eb_photoadd']."<input name=\"image\" type=\"file\" />".$_lang['eb_photoaddlimit'].ceil($imagesize/1024)." Kb."
 				);
 			$output .= $modx->parseText($template, $pl, '[+', '+]') ;
 			}
 		}
+	break;
+
+case "count":
+	if ( $parent !="" || $city !="" || $user !="" || $published !="") {
+		$wheres = array();
+		if ($parent !="") {
+			$tmpParents = getParentsArray ($parent, $recursion);
+			$whereParents = array();
+			foreach ($tmpParents as $value){
+				$whereParents[] = "$mod_table.parent = $value";
+			}
+			$wheres[] = "(". implode(" OR ", $whereParents) .")";
+			}
+		if ( trim($city) != "") $wheres[] = "($mod_table.city = $city or $mod_table.allcity = 1)";
+		if ($user !="") $wheres[] = "$mod_table.createdby = $user";
+		if ($published !="") $wheres[] = "$mod_table.published = $published";
+		$where = "WHERE " . implode(" AND ", $wheres);
+		}
+	
+	$result = $modx->db->query( "SELECT COUNT(*), sc1.pagetitle as parentname, sc2.pagetitle as cityname, wb.username FROM $mod_table
+	LEFT JOIN ".$dbprefix."site_content sc1 ON sc1.id = $mod_table.parent
+			LEFT JOIN ".$dbprefix."site_content sc2 ON sc2.id = $mod_table.city
+			LEFT JOIN ".$dbprefix."web_users wb ON wb.id = $mod_table.createdby
+			$where");
+	$output .= $modx->db->getValue($result);
+	
 	break;
 
 }

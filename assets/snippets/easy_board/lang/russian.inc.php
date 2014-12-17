@@ -14,4 +14,8 @@ $_lang['eb_photonotfound2'] = " не найдена!";
 $_lang['eb_photoadd'] = "<p>Фотография:</p>";
 $_lang['eb_photoaddlimit'] = "<br/>Размер файла не должен превышать ";
 
+// pagination
+$_lang['eb_pagination'] = "Страница: [+boardPage+] из [+boardPages+]. Всего объявлений в базе [+boardCol+] <br/><br/><ul>";
+$_lang['eb_paginationprevious'] = "<< предыдущая";
+$_lang['eb_paginationnext'] = "следующая >>";
 ?>

@@ -1,6 +1,6 @@
 <?php
 #######################
-# Easy Board v 1.01
+# Easy Board v 1.02
 #######################
 	include_once($modx->config['base_path'].'assets/modules/easy_board/easy_board.config.php');
 	
@@ -90,7 +90,7 @@
 	$template = str_replace("[+price+]", $price, $template);
 	$template = str_replace("[+hit+]", $hit, $template);
 	$template = str_replace("[+parent+]", genOptionList($categoryID, $parent), $template);
-	$template = str_replace("[+city+]", genOptionList($cityID, $city), $template);
+	$template = str_replace("[+city+]", genOptionList($cityID, $city, false), $template);
 	$template = str_replace("[+published+]", genCheckbox($published), $template);
 	$template = str_replace("[+allcity+]", genCheckbox($allcity), $template);
 	$template = str_replace("[+image+]", genImageForm($image, $id), $template);

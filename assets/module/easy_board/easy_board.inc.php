@@ -1,19 +1,22 @@
 <?php
-function genOptionList($parentID, $currentID, $sort = "pagetitle"){
+#######################
+# Easy Board v 1.02
+#######################
+function genOptionList($parentID, $currentID, $recursion = true, $sort = "pagetitle"){
 	global $modx;
 	
 	$childrens = array();
 	$childrens = $modx->getAllChildren($parentID, $sort, "ASC", "id, pagetitle, isfolder");
 	$tmp = "";
 	foreach ($childrens as $value){
-		if ( $value['isfolder'] == 1 ) $tmp .="<optgroup label=\"".$value['pagetitle']."\">";
-		if ( $value['isfolder'] == 0 ) {
+		if ( $value['isfolder'] == 1 AND $recursion) $tmp .="<optgroup label=\"".$value['pagetitle']."\">";
+		if ( $value['isfolder'] == 0 OR $recursion === false) {
 			$tmp .= "<option value=".$value['id'];
 			if ( $value['id']==$currentID ) $tmp .= " selected";
 			$tmp .= ">".$value['pagetitle']."</option>\n";
 			}
-		if ( $value['isfolder'] == 1 ) $tmp .= genOptionList($value['id'], $currentID);
-		if ( $value['isfolder'] == 1 ) $tmp .= "</optgroup>";
+		if ( $value['isfolder'] == 1 AND $recursion ) $tmp .= genOptionList($value['id'], $currentID);
+		if ( $value['isfolder'] == 1 AND $recursion ) $tmp .= "</optgroup>";
     }
 	return $tmp;
 	}
@@ -117,5 +120,4 @@ function delImage($id, $mod_table){
 	if ( is_file($modx->config['base_path'].$image) ) unlink ($modx->config['base_path'].$image);
     }	
 }
-
 ?>
