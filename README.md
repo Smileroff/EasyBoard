@@ -1,7 +1,7 @@
 EasyBoard
 =========
 
-EasyBoard 1.01 - доска объявлений для ModX Evo
+EasyBoard 1.02 - доска объявлений для ModX Evo
 
 Установка
 ---------
