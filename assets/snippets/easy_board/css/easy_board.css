@@ -62,3 +62,9 @@ ul.eb-list-single li{
 table.eb-table td{
 	padding-right:10px;
 }
+.eb-notice{
+	color:red;
+	margin: 10px 0;
+	padding:10px;
+	border:1px solid red;
+}

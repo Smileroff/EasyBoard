@@ -1,7 +1,7 @@
 <?php
 if(!defined('MODX_BASE_PATH')){die('What are you doing? Get out of here!');}
 #::::::::::::::::::::::::::::::::::::::::
-# ver 1.02 - доска объявлений Easy Board. 
+# ver 1.03 - доска объявлений Easy Board 
 # автор - леха.com, декабрь 2014 
 #::::::::::::::::::::::::::::::::::::::::
 
@@ -31,6 +31,9 @@ $phpthumboption = ( isset($phpthumboption) ) ? $phpthumboption : "w=150,h=120,fa
 $phpthumboptionSingle = ( isset($phpthumboptionSingle) ) ? $phpthumboptionSingle : "w=380,h=250,far=R,zc=1,bg=FFFFFF"; // опция для phpthumb при просмотре объявления
 $imagesize =  ( isset($imagesize) ) ? $imagesize : 1048576; //ограничение на размер загружаемого изображения
 $lang = ( isset($lang) ) ? $lang : "russian"; 			// Языковой пакет
+$required = ( isset($required) ) ? $required : "pagetitle,contact"; 	// Обязательные поля при добавлении нового объявления
+$filter = ( isset($filter) ) ? $filter : "";			// Дополнительная фильтрация по БД (синтаксис MySQL WHERE) Например: &filter=`sc2.pagetitle LIKE 'Я%'`
+$sort = ( isset($sort) ) ? $sort : "eb.createdon DESC";	// Сортировка объявлений (синтаксис MySQL ORDER BY)
 
 include($modx->config['base_path']."assets/modules/easy_board/easy_board.config.php");
 include_once($modx->config['base_path']."assets/modules/easy_board/easy_board.inc.php");

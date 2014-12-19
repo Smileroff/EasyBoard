@@ -14,34 +14,34 @@ case "viewboard":
     $boardPage = ( isset($_GET['boardPage']) ) ? (int)$_GET['boardPage'] : 1;
 	$pageLimit = ( $boardPage>0 ) ? ($boardPage-1)*$limit.", {$limit}" : "";
 	
-	if ( $parent !="" || $city !="" || $user !="" || $published !="") {
-		//
+	if ( $parent !="" || $city !="" || $user !="" || $published !="" || $filter !="" ) {
+		// фильтрация вывода
 		$wheres = array();
 		if ($parent !="") {
 			$tmpParents = getParentsArray ($parent, $recursion);
 			$whereParents = array();
 			foreach ($tmpParents as $value){
-				$whereParents[] = "$mod_table.parent = $value";
+				$whereParents[] = "eb.parent = $value";
 			}
 			$wheres[] = "(". implode(" OR ", $whereParents) .")";
 			}
-		if ( trim($city) != "") $wheres[] = "($mod_table.city = $city or $mod_table.allcity = 1)";
-		if ($user !="") $wheres[] = "$mod_table.createdby = $user";
-		if ($published !="") $wheres[] = "$mod_table.published = $published";
+		if ( trim($city) != "") $wheres[] = "(eb.city = $city or eb.allcity = 1)";
+		if ($user !="") $wheres[] = "eb.createdby = $user";
+		if ($published !="") $wheres[] = "eb.published = $published";
+		if ($filter !="") $wheres[] = "( $filter )";
 		$where = "WHERE " . implode(" AND ", $wheres);
 		}
 	
 	// СТАРТ пагинации
-	$result = $modx->db->query( "SELECT COUNT(*), sc1.pagetitle as parentname, sc2.pagetitle as cityname, wb.username FROM $mod_table
-	LEFT JOIN ".$dbprefix."site_content sc1 ON sc1.id = $mod_table.parent
-			LEFT JOIN ".$dbprefix."site_content sc2 ON sc2.id = $mod_table.city
-			LEFT JOIN ".$dbprefix."web_users wb ON wb.id = $mod_table.createdby
+	$result = $modx->db->query( "SELECT COUNT(*), sc1.pagetitle as parentname, sc2.pagetitle as cityname, wb.username FROM $mod_table as eb
+	LEFT JOIN ".$dbprefix."site_content sc1 ON sc1.id = eb.parent
+			LEFT JOIN ".$dbprefix."site_content sc2 ON sc2.id = eb.city
+			LEFT JOIN ".$dbprefix."web_users wb ON wb.id = eb.createdby
 			$where");
     $stickers = $modx->db->getRow( $result );
     $boardCol = $stickers['COUNT(*)'];
     $boardPages = ceil($boardCol/$limit);
 
-    //$pagination = "<div class=\"eb-paginate\">Страница: $boardPage из $boardPages. Всего объявлений в базе $boardCol <br/><br/><ul>";
 	$pagination = "<div class=\"eb-paginate\">";
 	$pagination .= str_replace(array("[+boardPage+]", "[+boardPages+]", "[+boardCol+]"), array($boardPage, $boardPages, $boardCol), $_lang['eb_pagination']);
     if ($boardPage > 1) $pagination .= '<li><a href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".($boardPage-1)).'">'.$_lang['eb_paginationprevious'].'</a></li>';
@@ -53,13 +53,13 @@ case "viewboard":
 	$modx->setPlaceholder('eb.pagination', $pagination);
     // ФИНИШ пагинации
 
-	$sql = "SELECT $mod_table.id, $mod_table.pagetitle, $mod_table.content, $mod_table.createdon, $mod_table.price, $mod_table.parent, $mod_table.city, $mod_table.createdby, $mod_table.published, $mod_table.image, $mod_table.hit, sc1.pagetitle as parentname, sc2.pagetitle as cityname, wb.username
-			FROM $mod_table
-			LEFT JOIN ".$dbprefix."site_content sc1 ON sc1.id = $mod_table.parent
-			LEFT JOIN ".$dbprefix."site_content sc2 ON sc2.id = $mod_table.city
-			LEFT JOIN ".$dbprefix."web_users wb ON wb.id = $mod_table.createdby
+	$sql = "SELECT eb.id, eb.pagetitle, eb.content, eb.createdon, eb.price, eb.parent, eb.city, eb.createdby, eb.published, eb.image, eb.hit, sc1.pagetitle as parentname, sc2.pagetitle as cityname, wb.username
+			FROM $mod_table as eb
+			LEFT JOIN ".$dbprefix."site_content sc1 ON sc1.id = eb.parent
+			LEFT JOIN ".$dbprefix."site_content sc2 ON sc2.id = eb.city
+			LEFT JOIN ".$dbprefix."web_users wb ON wb.id = eb.createdby
 			$where
-			ORDER BY $mod_table.createdon DESC
+			ORDER BY $sort
 			LIMIT $pageLimit";
 	$data_query = $modx->db->query($sql);
 	
@@ -80,7 +80,9 @@ case "viewboard":
 			"pagetitle" =>$data['pagetitle'],
 			"price" =>$data['price'],
 			"username" =>$data['username'],
+			"createdby" =>$data['createdby'],
 			"cityname" =>$data['cityname'],
+			"city" =>$data['city'],
 			"parentname" =>$data['parentname'],
 			"parent" =>$data['parent'],
 			"hit" =>$data['hit'],
@@ -130,7 +132,9 @@ case "viewsingle":
 			"contact" =>$data['contact'],
 			"price" =>$data['price'],
 			"username" =>$data['username'],
+			"createdby" =>$data['createdby'],
 			"cityname" =>$data['cityname'],
+			"city" =>$data['city'],
 			"parentname" =>$data['parentname'],
 			"parent" =>$data['parent'],
 			"hit" =>$data['hit'],
@@ -186,7 +190,15 @@ case "edit":
 						print_r($_FILES['image']);
 						$fields['image'] = loadImage($imageDir, $imagesize);
 						}
-					$query = $modx->db->update($fields, $mod_table, "id = $id");
+					$checkRequired = checkRequiredArray($required, $fields);
+					if ( $checkRequired[0] === false ){
+						// Если обязательные поля не заполнены
+						$fields[published] = 0;
+						$modx->db->update($fields, $mod_table, "id = $id");
+						//header("Location: http://".$_SERVER['SERVER_NAME'].$modx->makeUrl( $idediturl, "", "eb=".$modx->db->getInsertId() )."&notice=$checkRequired[1]");
+						header("Location: http://".$_SERVER['SERVER_NAME'].$_SERVER[REQUEST_URI] . "&notice=$checkRequired[1]");
+						die();
+					} else $query = $modx->db->update($fields, $mod_table, "id = $id");
 					header("Location: http://".$_SERVER['SERVER_NAME'].$modx->makeUrl($idafterediturl));
 					} else die($_lang['eb_accessdenied']);
 				
@@ -241,6 +253,18 @@ case "edit":
 			$tmp .= "</div>";
 			$pl['image'] = $tmp;
 			
+			//notice
+			if (isset($_GET[notice])){
+				//$pl['notice'] = $_GET[notice];
+				$fieldNames = explode(",", $modx->db->escape( $_GET[notice] ) );
+				$notices = array();
+				foreach ($fieldNames as $value){
+					$notices[] = $_lang["eb_notice_$value"];
+				}
+				$pl['notice'] = str_replace("[+notices+]", implode(", ", $notices) , $_lang['eb_notice']);
+				
+			}
+			
 			$output .= $modx->parseText($template, $pl, '[+', '+]') ;
 			} else die($_lang['eb_accessdenied']);
 	}
@@ -263,7 +287,14 @@ case "add":
 						'createdby' => $LoginUserID,
 						'createdon' => time()
 						);
-			$modx->db->insert( $fields, $mod_table);
+			$checkRequired = checkRequiredArray($required, $fields);
+			if ( $checkRequired[0] === false ){
+				// Если обязательные поля не заполнены
+				$fields[published] = 0;
+				$modx->db->insert( $fields, $mod_table);
+				header("Location: http://".$_SERVER['SERVER_NAME'].$modx->makeUrl( $idediturl, "", "eb=".$modx->db->getInsertId() )."&notice=$checkRequired[1]");
+				die();
+			} else	$modx->db->insert( $fields, $mod_table);
 			header("Location: http://".$_SERVER['SERVER_NAME'].$modx->makeUrl($idafterediturl));
 			die("");
 			
@@ -283,26 +314,28 @@ case "add":
 	break;
 
 case "count":
-	if ( $parent !="" || $city !="" || $user !="" || $published !="") {
+	if ( $parent !="" || $city !="" || $user !="" || $published !="" || $filter !="" ) {
+		// фильтрация вывода
 		$wheres = array();
 		if ($parent !="") {
 			$tmpParents = getParentsArray ($parent, $recursion);
 			$whereParents = array();
 			foreach ($tmpParents as $value){
-				$whereParents[] = "$mod_table.parent = $value";
+				$whereParents[] = "eb.parent = $value";
 			}
 			$wheres[] = "(". implode(" OR ", $whereParents) .")";
 			}
-		if ( trim($city) != "") $wheres[] = "($mod_table.city = $city or $mod_table.allcity = 1)";
-		if ($user !="") $wheres[] = "$mod_table.createdby = $user";
-		if ($published !="") $wheres[] = "$mod_table.published = $published";
+		if ( trim($city) != "") $wheres[] = "(eb.city = $city or eb.allcity = 1)";
+		if ($user !="") $wheres[] = "eb.createdby = $user";
+		if ($published !="") $wheres[] = "eb.published = $published";
+		if ($filter !="") $wheres[] = "( $filter )";
 		$where = "WHERE " . implode(" AND ", $wheres);
 		}
 	
-	$result = $modx->db->query( "SELECT COUNT(*), sc1.pagetitle as parentname, sc2.pagetitle as cityname, wb.username FROM $mod_table
-	LEFT JOIN ".$dbprefix."site_content sc1 ON sc1.id = $mod_table.parent
-			LEFT JOIN ".$dbprefix."site_content sc2 ON sc2.id = $mod_table.city
-			LEFT JOIN ".$dbprefix."web_users wb ON wb.id = $mod_table.createdby
+	$result = $modx->db->query( "SELECT COUNT(*), sc1.pagetitle as parentname, sc2.pagetitle as cityname, wb.username FROM $mod_table as eb
+	LEFT JOIN ".$dbprefix."site_content sc1 ON sc1.id = eb.parent
+			LEFT JOIN ".$dbprefix."site_content sc2 ON sc2.id = eb.city
+			LEFT JOIN ".$dbprefix."web_users wb ON wb.id = eb.createdby
 			$where");
 	$output .= $modx->db->getValue($result);
 	

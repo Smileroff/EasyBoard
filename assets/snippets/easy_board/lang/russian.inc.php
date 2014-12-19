@@ -18,4 +18,12 @@ $_lang['eb_photoaddlimit'] = "<br/>Размер файла не должен п�
 $_lang['eb_pagination'] = "Страница: [+boardPage+] из [+boardPages+]. Всего объявлений в базе [+boardCol+] <br/><br/><ul>";
 $_lang['eb_paginationprevious'] = "<< предыдущая";
 $_lang['eb_paginationnext'] = "следующая >>";
+
+// notice
+$_lang['eb_notice'] = "<div class=\"eb-notice\">Внимание! Публикация отменена. Не заполнены обязательные поля: <b>[+notices+]</b></div>";
+$_lang['eb_notice_pagetitle'] = "заголовок объявления";
+$_lang['eb_notice_content'] = "текст объявления";
+$_lang['eb_notice_contact'] = "телефон";
+$_lang['eb_notice_price'] = "цена";
+$_lang['eb_notice_image'] = "фотография";
 ?>
