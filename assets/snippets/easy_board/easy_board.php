@@ -1,6 +1,6 @@
 ﻿<?php
 #####################
-# Easy_Board ver 1.02
+# Easy_Board ver 1.04
 #####################
 
 if(!defined('MODX_BASE_PATH')){die('What are you doing? Get out of here!');}
@@ -41,16 +41,17 @@ case "viewboard":
     $stickers = $modx->db->getRow( $result );
     $boardCol = $stickers['COUNT(*)'];
     $boardPages = ceil($boardCol/$limit);
-
-	$pagination = "<div class=\"eb-paginate\">";
-	$pagination .= str_replace(array("[+boardPage+]", "[+boardPages+]", "[+boardCol+]"), array($boardPage, $boardPages, $boardCol), $_lang['eb_pagination']);
-    if ($boardPage > 1) $pagination .= '<li><a href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".($boardPage-1)).'">'.$_lang['eb_paginationprevious'].'</a></li>';
-    for ($i = 1; $i <= $boardPages; $i++) 
-        if ($i == $boardPage) $pagination .= '<li class="eb-currentPage"><a class="eb-currentPage" href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".$i).'">'.$i.'</a></li>'; 
-        else if ( abs($i-$boardPage) < 5 || $i == 1 || $i == $boardPages) $pagination .= '<li><a href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".$i).'">'.$i.'</a></li>';
-    if ($boardPage < $boardPages) $pagination .= ' <li><a href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".($boardPage+1)).'">'.$_lang['eb_paginationnext'].'</a></li>';
-    $pagination .= "</ul></div><div class=\"eb-clear\"></div>\n";
-	$modx->setPlaceholder('eb.pagination', $pagination);
+	if ($boardPages>1 AND $paginate == 1){
+		$pagination = "<div class=\"eb-paginate\">";
+		$pagination .= str_replace(array("[+boardPage+]", "[+boardPages+]", "[+boardCol+]"), array($boardPage, $boardPages, $boardCol), $_lang['eb_pagination']);
+		if ($boardPage > 1) $pagination .= '<li><a href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".($boardPage-1)).'">'.$_lang['eb_paginationprevious'].'</a></li>';
+		for ($i = 1; $i <= $boardPages; $i++) 
+			if ($i == $boardPage) $pagination .= '<li class="eb-currentPage"><a class="eb-currentPage" href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".$i).'">'.$i.'</a></li>'; 
+			else if ( abs($i-$boardPage) < 5 || $i == 1 || $i == $boardPages) $pagination .= '<li><a href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".$i).'">'.$i.'</a></li>';
+		if ($boardPage < $boardPages) $pagination .= ' <li><a href="'.$modx->makeUrl( $modx->documentIdentifier, "", "&boardPage=".($boardPage+1)).'">'.$_lang['eb_paginationnext'].'</a></li>';
+		$pagination .= "</ul></div><div class=\"eb-clear\"></div>\n";
+		$modx->setPlaceholder('eb.pagination', $pagination);
+	}
     // ФИНИШ пагинации
 
 	$sql = "SELECT eb.id, eb.pagetitle, eb.content, eb.createdon, eb.price, eb.parent, eb.city, eb.createdby, eb.published, eb.image, eb.hit, sc1.pagetitle as parentname, sc2.pagetitle as cityname, wb.username
@@ -63,20 +64,22 @@ case "viewboard":
 			LIMIT $pageLimit";
 	$data_query = $modx->db->query($sql);
 	
-	$LoginUserID = $modx->getLoginUserID();
+	if ($modx->db->getRecordCount( $data_query ) > 0 ){
+		$LoginUserID = $modx->getLoginUserID();
 	
-	if ($jquery == 1) $modx->regClientStartupScript("assets/js/jquery.min.js");
-	$modx->regClientStartupScript('<script language="JavaScript" type="text/javascript">
+		if ($jquery == 1) $modx->regClientStartupScript("assets/js/jquery.min.js");
+		$modx->regClientStartupScript('<script language="JavaScript" type="text/javascript">
 			function ItemAjax(act, id, elementID){
 				$("#"+elementID+""+id).load("/assets/snippets/easy_board/easy_board.ajax.php","act="+act+"&item_id="+id);
 				}
 			</script>');
 			
-	if ($tplview == "") {
-		$template = file_get_contents($snippetPath . "tpl/view.tpl");
+		if ($tplview == "") {
+			$template = file_get_contents($snippetPath . "tpl/view.tpl");
 		} else $template = $modx->getChunk($tplview);
-	while ($data = mysql_fetch_array($data_query)){
-		$pl = array(
+	
+		while ($data = mysql_fetch_array($data_query)){
+			$pl = array(
 			"pagetitle" =>$data['pagetitle'],
 			"price" =>$data['price'],
 			"username" =>$data['username'],
@@ -91,21 +94,21 @@ case "viewboard":
 			"date" =>date( "Y.m.d G:i:s", $data['createdon'] ),
 			"url" =>$modx->makeUrl( $idviewurl, "", "&eb=".$data['id'] )
 			);
-		$pl["annotation"] = ( strlen($data['content']) > $annotationlen ) ? mb_substr($data['content'], 0, $annotationlen, "UTF8")."..." : $data['content'];
+			$pl["annotation"] = ( strlen($data['content']) > $annotationlen ) ? mb_substr($data['content'], 0, $annotationlen, "UTF8")."..." : $data['content'];
 		
-		$data['image'] = ( $data['image'] != "" ) ? $data['image'] : $nophoto;
-		$pl["image"] = "<img src=\"".$modx->config['site_url'].$modx->runSnippet('phpthumb', array( 'input' => $data['image'], 'options' => $phpthumboption ))."\"/>";
+			$data['image'] = ( $data['image'] != "" ) ? $data['image'] : $nophoto;
+			$pl["image"] = "<img src=\"".$modx->config['site_url'].$modx->runSnippet('phpthumb', array( 'input' => $data['image'], 'options' => $phpthumboption ))."\"/>";
 			
-		if ( $LoginUserID == $data['createdby'] OR $_SESSION['mgrRole'] == 1 ){
-			$pl['edit'] = "<a href=\"".$modx->makeUrl( $idediturl, "", "&eb=".$data['id'] )."\">$txtedit</a>";
-			$pl['delete'] = '<a href="#" onclick="ItemAjax(\'unpub\', \''.$data['id'].'\', \'pub\');return false">'.$txtdelete.'</a>';
+			if ( $LoginUserID == $data['createdby'] OR $_SESSION['mgrRole'] == 1 ){
+				$pl['edit'] = "<a href=\"".$modx->makeUrl( $idediturl, "", "&eb=".$data['id'] )."\">$txtedit</a>";
+				$pl['delete'] = '<a href="#" onclick="ItemAjax(\'unpub\', \''.$data['id'].'\', \'pub\');return false">'.$txtdelete.'</a>';
 			} else {
-			$pl['edit'] = "";
-			$pl['delete'] = "";
+				$pl['edit'] = "";
+				$pl['delete'] = "";
 			}
-		$output .= $modx->parseText($template, $pl, '[+', '+]' );
-	}
-	
+			$output .= $modx->parseText($template, $pl, '[+', '+]' );
+		}
+	} else $output .= $noresult;
 
     break;
 
@@ -120,7 +123,7 @@ case "viewsingle":
 			LEFT JOIN ".$dbprefix."site_content sc1 ON sc1.id = $mod_table.parent
 			LEFT JOIN ".$dbprefix."site_content sc2 ON sc2.id = $mod_table.city
 			LEFT JOIN ".$dbprefix."web_users wb ON wb.id = $mod_table.createdby
-			WHERE $mod_table.id = $id AND $mod_table.published = 1";
+			WHERE $mod_table.id = $id AND $mod_table.published = $published";
 	$data_query = $modx->db->query($sql);
 	
 	$data = mysql_fetch_array($data_query);
@@ -340,6 +343,20 @@ case "count":
 	$output .= $modx->db->getValue($result);
 	
 	break;
+
+case "searchform":
+# 		$idsearchpage		$tplsearchform
+	if ($tplsearchform == "") {
+				$template = file_get_contents($snippetPath . "tpl/view.searchform.tpl");
+				} else $template = $modx->getChunk($tplsearchform);
+			$pl = array(
+				"parentIds" =>genOptionList($parentIds, $modx->runSnippet( 'toget', array( 'name' => "parentid" ) ) ),
+				"cityIds" =>genOptionList($cityIds, $modx->runSnippet( 'toget', array( 'name' => "cityid" ) ), false),
+				"search" => $modx->runSnippet( 'toget', array( 'name' => "search" ) ),
+				"idsearchpage" => $idsearchpage
+				);
+			$output .= $modx->parseText($template, $pl, '[+', '+]') ;
+break;
 
 }
 

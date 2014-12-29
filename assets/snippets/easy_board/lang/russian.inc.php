@@ -1,9 +1,10 @@
 ﻿<?php
 /*
-Easy Board
+Easy Board v1.04
 */
 
 $_lang['eb_notfound'] = 'Объявление не найдено';
+$_lang['eb_noresult'] = 'Нет объявлений';
 $_lang['eb_accessdenied'] = 'Доступ запрещен';
 
 // photo
