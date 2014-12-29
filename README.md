@@ -1,7 +1,11 @@
 EasyBoard
 =========
 
+<<<<<<< HEAD
 EasyBoard 1.04 - доска объявлений для ModX Evo
+=======
+EasyBoard - доска объявлений для ModX Evo
+>>>>>>> origin/master
 
 Установка
 ---------
