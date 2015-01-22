@@ -1,6 +1,6 @@
 <?php
 #######################
-# Easy Board v 1.02
+# Easy Board v 1.05
 #######################
 function genOptionList($parentID, $currentID, $recursion = true, $sort = "pagetitle"){
 	global $modx;
@@ -20,6 +20,15 @@ function genOptionList($parentID, $currentID, $recursion = true, $sort = "pageti
     }
 	return $tmp;
 	}
+
+function genOptionListContext($contexts = array(), $currentKey){
+	$tmp = "";
+	foreach ($contexts as $key => $value){
+		$selected = ($currentKey == $key) ? " selected" : "";
+		$tmp .= '<option value="'.$key.'"'.$selected.'>'.$key.'</option>';
+	}
+	return $tmp;
+}
 	
 function getListChildsOrParent($parentID){
 	global $modx;

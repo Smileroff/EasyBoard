@@ -1,6 +1,6 @@
 ﻿<?php
 #####################
-# Easy_Board ver 1.04
+# Easy_Board ver 1.05
 #####################
 
 if(!defined('MODX_BASE_PATH')){die('What are you doing? Get out of here!');}
@@ -28,6 +28,7 @@ case "viewboard":
 		if ( trim($city) != "") $wheres[] = "(eb.city = $city or eb.allcity = 1)";
 		if ($user !="") $wheres[] = "eb.createdby = $user";
 		if ($published !="") $wheres[] = "eb.published = $published";
+		if ($context !="") $wheres[] = "eb.context = '$context'";
 		if ($filter !="") $wheres[] = "( $filter )";
 		$where = "WHERE " . implode(" AND ", $wheres);
 		}
@@ -176,7 +177,7 @@ case "edit":
 		$LoginUserID = $modx->getLoginUserID();
 		if ( $LoginUserID == $data['createdby'] OR $_SESSION['mgrRole'] == 1 ){
 			if ($_POST['act'] == "edit") { // если отправлена форма, обновление записи
-				$id = (int)$_POST['id'];
+				$id = (int)$_POST['ebid'];
 				$userid = $modx->db->getValue($modx->db->select("createdby", $mod_table, "id = $id", "", ""));
 				if ($LoginUserID == $userid OR $_SESSION['mgrRole'] == 1 ){ // немного кривая проверка на права доступа, но должно работать.
 					$fields = array(
@@ -198,7 +199,6 @@ case "edit":
 						// Если обязательные поля не заполнены
 						$fields[published] = 0;
 						$modx->db->update($fields, $mod_table, "id = $id");
-						//header("Location: http://".$_SERVER['SERVER_NAME'].$modx->makeUrl( $idediturl, "", "eb=".$modx->db->getInsertId() )."&notice=$checkRequired[1]");
 						header("Location: http://".$_SERVER['SERVER_NAME'].$_SERVER[REQUEST_URI] . "&notice=$checkRequired[1]");
 						die();
 					} else $query = $modx->db->update($fields, $mod_table, "id = $id");
@@ -288,7 +288,8 @@ case "add":
 						'published' => 1,
 						'image' =>loadImage($imageDir, $imagesize),
 						'createdby' => $LoginUserID,
-						'createdon' => time()
+						'createdon' => time(),
+						'context' => $context
 						);
 			$checkRequired = checkRequiredArray($required, $fields);
 			if ( $checkRequired[0] === false ){
@@ -331,6 +332,7 @@ case "count":
 		if ( trim($city) != "") $wheres[] = "(eb.city = $city or eb.allcity = 1)";
 		if ($user !="") $wheres[] = "eb.createdby = $user";
 		if ($published !="") $wheres[] = "eb.published = $published";
+		if ($context !="") $wheres[] = "eb.context = '$context'";
 		if ($filter !="") $wheres[] = "( $filter )";
 		$where = "WHERE " . implode(" AND ", $wheres);
 		}
@@ -345,7 +347,6 @@ case "count":
 	break;
 
 case "searchform":
-# 		$idsearchpage		$tplsearchform
 	if ($tplsearchform == "") {
 				$template = file_get_contents($snippetPath . "tpl/view.searchform.tpl");
 				} else $template = $modx->getChunk($tplsearchform);

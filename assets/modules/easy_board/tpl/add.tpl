@@ -23,6 +23,15 @@
 	</div>
 	<label><input name="allcity" type="checkbox" [+allcity+]/> Публиковать во всех городах</label>
 </td>
+<td valign="top">
+	<div class="sec maxheight">
+		<p>Контекст:</p>
+		<select name="context">
+			<option value="">Все контексты</option>
+			[+contexts+]				
+		</select>
+	</div>
+</td>
 </tr></table>
 <br/><p>Заголовок:</p>
 <input class="styler" type="text" name="pagetitle" style="width:90%;" value="[+pagetitle+]" />

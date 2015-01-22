@@ -1,7 +1,7 @@
 <br/>
 <form method="post" enctype="multipart/form-data">
 <input type="hidden" name="act" value="edit">
-<input type="hidden" name="id" value="[+id+]">
+<input type="hidden" name="ebid" value="[+id+]">
 [+notice+]
 <p>Объявление <b>№[+id+]</b>;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Автор: [+username+]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 

@@ -1,12 +1,13 @@
 <?php
 if(!defined('MODX_BASE_PATH')){die('What are you doing? Get out of here!');}
 #::::::::::::::::::::::::::::::::::::::::
-# ver 1.04 - доска объявлений Easy Board 
-# автор - леха.com, декабрь 2014 
+# ver 1.05 - доска объявлений Easy Board 
+# автор - леха.com, январь 2015 
 #::::::::::::::::::::::::::::::::::::::::
 
 // Значения по умолчанию
 $action = ( isset($action) ) ? $action : "viewboard";
+$context = ( isset($context) ) ? $context : "main";		// с каким контекстом работать
 $limit = ( isset($limit) ) ? $limit : 20; 				// лимит количества объявлений на странице
 $paginate = ( isset($paginate) ) ? $paginate : 1; 		// Выводить пагинацию или нет. "1" - выводить.
 $parent = ( isset($parent) ) ? $parent : ""; 			// id рубрики

@@ -8,4 +8,15 @@
 		define (IMAGEPATH, "assets/images/easy_board/"); 	//путь папки с фотографиями
 	}
 	$imageDir = $modx->config['base_path'].IMAGEPATH; 
+	
+	#########################################################
+	#														#
+	# Настройка контекстов									#
+	# Например: 											#
+	# $contexts = array("catalog" => "", "board" => "");	#
+	#														#
+	#########################################################
+	
+	$contexts = array( "main" => "");
+	
 ?>

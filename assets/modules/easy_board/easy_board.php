@@ -1,6 +1,6 @@
 <?php
 #######################
-# Easy Board v 1.02
+# Easy Board v 1.05
 #######################
 	include_once($modx->config['base_path'].'assets/modules/easy_board/easy_board.config.php');
 	
@@ -31,6 +31,7 @@
   `createdby` int(10) NOT NULL DEFAULT '0',
   `createdon` int(20) NOT NULL DEFAULT '0',
   `hit` int(10) NOT NULL DEFAULT '0',
+  `context` varchar(32) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
     $modx->db->query($sql);
@@ -51,6 +52,7 @@
 	********************************************************/
     case 'add':
     if (!empty($_POST['item_id'])){//редактирование записи
+	$context = ( isset($_POST[context]) ) ? $modx->db->escape($_POST[context]) : "";
     $id = (int)$_POST['item_id'];
 	$data = mysql_fetch_array($modx->db->select("*", $mod_table, "id = $id", "", ""));
     $pagetitle = $data['pagetitle'];
@@ -64,6 +66,7 @@
 	$allcity = $data['allcity'];
 	$hit = $data['hit'];
 	$image = $data['image'];
+	$context = $data['context'];
     $save = "update";
     }else{//если запись новая
     $id = '';
@@ -78,6 +81,7 @@
 	$allcity = 0;
 	$hit = 0;
 	$image = "";
+	$context = "";
     $save = "save";
     }
     
@@ -91,6 +95,7 @@
 	$template = str_replace("[+hit+]", $hit, $template);
 	$template = str_replace("[+parent+]", genOptionList($categoryID, $parent), $template);
 	$template = str_replace("[+city+]", genOptionList($cityID, $city, false), $template);
+	$template = str_replace("[+contexts+]", genOptionListContext($contexts, $context), $template);
 	$template = str_replace("[+published+]", genCheckbox($published), $template);
 	$template = str_replace("[+allcity+]", genCheckbox($allcity), $template);
 	$template = str_replace("[+image+]", genImageForm($image, $id), $template);
@@ -116,7 +121,8 @@
 					'hit' => (int)$_POST[hit],					
 					'createdby' => (int)$_POST[createdby],
 					'image' => loadImage($imageDir),
-					'createdon' => time()
+					'createdon' => time(),
+					'context' => $modx->db->escape( $_POST[context])
                     );
 	$fields['published'] = (isset($_POST[published])) ? 1: 0;
 	$fields['allcity'] = (isset($_POST[allcity])) ? 1: 0;
@@ -133,7 +139,8 @@
 					'parent' => (int)$_POST[parent],
 					'city' => (int)$_POST[city],
 					'hit' => (int)$_POST[hit],
-					'createdby' => (int)$_POST[createdby]
+					'createdby' => (int)$_POST[createdby],
+					'context' => $modx->db->escape( $_POST[context])
                     );
 	$fields['published'] = (isset($_POST[published])) ? 1: 0;
 	$fields['allcity'] = (isset($_POST[allcity])) ? 1: 0;
@@ -191,6 +198,7 @@
 	
 	// Обрабатываем параметры фильтрации
 	$filtertext = ( isset($_POST[filtertext]) ) ? $modx->db->escape( $_POST[filtertext] ) : "";
+	$context = ( isset($_POST[context]) ) ? $modx->db->escape($_POST[context]) : "";
 	$filter = ( isset($_POST[filter]) ) ? (int)$_POST[filter] : "";
 	$filters = array("","","","","","","","");
 	$filters[$filter-1] = " selected";
@@ -223,6 +231,13 @@
 			break;
 		}
 	}
+	
+	if ( $context != ""){
+		if ($where != "") {
+			$where .= " AND $mod_table.context = '$context'";
+		} else $where = "WHERE $mod_table.context = '$context'";
+	}
+	
 	echo '
 		<input class="styler" type="text" name="filtertext" style="width:200px" value="'.$filtertext.'" placeholder="Текст для фильтрации" />
 		<select name="filter">
@@ -235,6 +250,14 @@
 			<option value=7'.$filters[6].'>по рубрике</option>	
 			<option value=8'.$filters[7].'>по ID рубрики</option>			
 		</select>
+		
+		<select name="context">
+			<option value="">Все контексты</option>';
+			foreach ($contexts as $key => $value){
+				$selected = ($context == $key) ? " selected" : "";
+				echo '<option value="'.$key.'"'.$selected.'>'.$key.'</option>';
+			}
+	echo '</select>
 		<button class="styler" href="#" onclick="postFormPag(\'1\');return false;">Фильтровать</button>
     </form>';
     
