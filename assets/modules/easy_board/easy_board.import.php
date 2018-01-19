@@ -1,5 +1,5 @@
 ﻿<?php
-		
+	if(IN_MANAGER_MODE!='true') die('<h1>Forbidden!</h1>');	
 	function fParseCSV($f, $length, $d=";", $q='"') {
         $list = array();
         $st = fgets($f, $length);

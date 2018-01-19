@@ -1,7 +1,8 @@
 <?php
 #######################
-# Easy Board v 1.05
+# Easy Board v 1.06
 #######################
+if(IN_MANAGER_MODE!='true') die('<h1>Forbidden!</h1>');	
 	include_once($modx->config['base_path'].'assets/modules/easy_board/easy_board.config.php');
 	
 	include_once($modx->config['base_path'].'assets/modules/easy_board/easy_board.inc.php');
